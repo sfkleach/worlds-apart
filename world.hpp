@@ -7,6 +7,7 @@
 
 #include "sqlite3lib.hpp"
 
+class Faction;
 class Hex;
 class Unit;
 
@@ -20,6 +21,7 @@ private:
 	int height;
 	std::vector< std::vector< Hex * > > hexes;
 	std::deque< Unit * > units;
+	std::vector< Faction * > factions;
 
 public:
 	World() :
@@ -55,6 +57,7 @@ public:
 public:
 	void restore( const char * db_path_name );
 private:
+	void restoreFactions( Sqlite3 & db );
 	void restoreSize( Sqlite3 & db );
 	void restoreHexes( Sqlite3 & db );
 	void restoreUnits( Sqlite3 & db );

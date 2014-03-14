@@ -10,7 +10,7 @@
 
 #include <time.h>
 #include <unistd.h>
-
+#include <sys/wait.h>
 
 #include "sqlite3lib.hpp"
 #include "common.hpp"
@@ -52,6 +52,13 @@ int main( int argc, char **argv ) {
 	cout << "Rescheduled " << ( count / static_cast< float >( NUM_SECS ) ) << " times per sec." << endl;
 
 	world.forkDump( "after.db");
+
+	for (;;) {
+		int stat_loc;
+		pid_t p = wait( &stat_loc );
+		if ( p < 0 ) break;
+		cout << "Child " << p << endl;
+	}
 
 	return EXIT_SUCCESS;
 }

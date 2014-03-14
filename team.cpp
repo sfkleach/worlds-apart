@@ -38,10 +38,10 @@ void Team::action() {
 }
 
  void Team::dump( StatementCache & db ) {
-		Statement & insert = db.get( "INSERT INTO TEAM VALUES(?,?,?)" );
-		insert.reset();
-		insert.bind( 1, this->location->getX() );
-		insert.bind( 2, this->location->getY() );
-		insert.bind( 3, this->faction );
-		insert.step();
-	}
+	Statement & insert = db.get( "INSERT INTO TEAM VALUES(?,?,?)" );
+	insert.reset();
+	insert.bind( 1, this->location->getX() );
+	insert.bind( 2, this->location->getY() );
+	insert.bind( 3, this->faction );
+	insert.step();
+}

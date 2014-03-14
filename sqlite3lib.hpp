@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include <memory>
 
 #include <stdlib.h>
 
@@ -80,8 +81,24 @@ public:
 		}
 	}
 
+	void bind( const int index, const std::string & value ) {
+		const int rc = sqlite3_bind_text( this->statement, index, value.c_str(), -1, SQLITE_TRANSIENT );
+		if ( rc != SQLITE_OK ) {
+			//	@todo
+			std::cerr << "SQL error: binding failed: " << index << ", " << value << std::endl;
+			exit( EXIT_FAILURE );
+		}
+	}
+
 	void column( const int index, int & result ) {
 		result = sqlite3_column_int( this->statement, index );
+	}
+
+	void column( const int index, std::string & result ) {
+		const unsigned char * text = sqlite3_column_text( this->statement, index );
+		while ( *text != '\0' ) {
+			result += static_cast< char >( *text++ );
+		}
 	}
 
 	int step() {
