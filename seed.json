@@ -1,0 +1,10 @@
+{	
+	"board": { "width": 1024, "height": 1024, "elevation" : "elevation.png" },
+	"units": 10000,
+	"factions": 
+		[
+			{ "id": 0, "name": "Red Team", "color": "red" },
+			{ "id": 1, "name": "Green Team", "color": "green" },
+			{ "id": 2, "name": "Blue Team", "color": "blue" }
+		]
+}

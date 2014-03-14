@@ -1,15 +1,13 @@
 #!/usr/local/bin/python3
 
-from PIL import Image, ImageDraw
+from PIL import Image
 import sqlite3
 import sys
+from contextlib import closing
 
-DIM = ( 1024, 1024 )
-
-def trail( db_name ):
-	with sqlite3.connect( db_name ) as world_db:
-		worldq = world_db.cursor()
-		worldq.execute( 'select x, y, mark, land from hex' )
+def trail( db ):
+	with closing( db.cursor() ) as worldq:
+		worldq.execute( 'select x, y, mark, elevation from hex' )
 		for row in worldq:
 			x = row[0]
 			y = row[1]
@@ -17,22 +15,40 @@ def trail( db_name ):
 			t = row[3]
 			yield( ( x, y ), m, t )
 
-def units( db_name ):
-	with sqlite3.connect( db_name ) as world_db:
-		worldq = world_db.cursor()
-		worldq.execute( 'select team.x, team.y from team' )
+def units( db ):
+	with closing( db.cursor() ) as worldq:
+		worldq.execute( 'select team.x, team.y, faction.color from team join faction on team.faction = faction.id' )
 		for row in worldq:
 			x = row[0]
 			y = row[1]
-			yield( x, y )
+			c = row[2]
+			yield ( ( x, y ), c )
+
+
+def worldSize( db ):
+	with closing( db.cursor() ) as worldq:
+		worldq.execute( 'select width, height from world' );
+		row = worldq.fetchone()
+		return ( row[0], row[1] )
+
+def colorTuple( color ):
+	if color == "red":
+		return ( 255, 0, 0 )
+	elif color == "green":
+		return ( 0, 255, 0 )
+	elif color == "blue":
+		return ( 0, 0, 255 )
+	else:
+		return ( 255, 255, 0 )
 
 def unitsImage( db_name ):
-	img = Image.new( "RGB", DIM )
-	for ( coord, m, t ) in trail( db_name ):
-		img.putpixel( coord, ( 255, 0, 0 ) if m else ( 40 * t, 40 * t, 40 * t ) )
-	for coord in units( db_name ):
-		img.putpixel( coord, ( 255, 255, 255 ) )
-	return img
+	with sqlite3.connect( db_name ) as db:
+		img = Image.new( "RGB", worldSize( db ) )
+		for ( coord, m, t ) in trail( db ):
+			img.putpixel( coord, ( 255, 0, 0 ) if m else ( 40 * t, 40 * t, 40 * t ) )
+		for ( coord, color ) in units( db ):
+			img.putpixel( coord, colorTuple( color ) )
+		return img
 
 if __name__ == "__main__":
 	unitsImage( sys.argv[ 1 ] ).save( sys.argv[ 2 ] )
