@@ -6,6 +6,7 @@
 #include "world.hpp"
 #include "hex.hpp"
 #include "team.hpp"
+#include "faction.hpp"
 
 using namespace std;
 
@@ -39,7 +40,6 @@ void World::runOneUnit() {
 	Unit * top_unit = this->units.front();
 	this->units.pop_front();
 	top_unit->action();
-	top_unit->reschedule();
 	this->units.push_back( top_unit );
 }
 
@@ -67,7 +67,7 @@ void World::populateUnits( const int width, const int height, const int n_units 
 				//cout << "Conflict at (" << location.getX() << "," << location.getY() << ")" << endl;
 				continue;	//	 Re-roll.
 			}
-			units.push_back( new Team( hex, irandom( 0, 6 ), r() ) );
+			units.push_back( new Team( hex, irandom( 0, 6 ) ) );
 			break;
 		}
 	}
@@ -119,6 +119,11 @@ void World::dump( const char * db_path_name ) {
 	Sqlite3 db( db_path_name );
 	StatementCache cache( db );
 	db.exec( "BEGIN TRANSACTION" );
+	{
+		for ( auto it = this->factions.begin(); it != this->factions.end(); ++it ) {
+			(*it)->dump( cache );
+		}
+	}
 	{
 		Statement s( db, "INSERT INTO WORLD VALUES(?,?)" );
 		s.bind( 1, this->width );
@@ -192,27 +197,45 @@ void World::restoreHexes( Sqlite3 & db ) {
 }
 
 void World::restoreUnits( Sqlite3 & db ) {
-	Statement teamdata( db, "SELECT x, y FROM TEAM" );
+	Statement teamdata( db, "SELECT x, y, faction FROM TEAM" );
 	int count;
 	for ( count = 0; ; count++ ) {
 		const int rc = teamdata.step();
 		if ( rc == SQLITE_DONE ) break;
-		int x, y;
+		int x, y, faction;
 		teamdata.column( 0, x );
 		teamdata.column( 1, y );
+		teamdata.column( 2, faction );
 		Hex * hex = this->tryFind( x, y );
 		if ( hex == nullptr ) {
 			cerr << "Cannot place team at: (" << x << "," << y << ")" << endl;
 		} else {
-			this->units.push_back( new Team( hex, 0, 0.0 ) );
+			this->units.push_back( new Team( hex, faction ) );
 			count += 1;
 		}
 	}
 	cout << "Read " << count << " team records." << endl;	
 }
 
+void World::restoreFactions( Sqlite3 & db ) {
+	Statement factiondata( db, "SELECT id, name, color FROM FACTION" );
+	int count;
+	for ( count = 0; ; count++ ) {
+		const int rc = factiondata.step();
+		if ( rc == SQLITE_DONE ) break;
+		int id;
+		string name, color;
+		factiondata.column( 0, id );
+		factiondata.column( 1, name );
+		factiondata.column( 2, color );
+		this->factions.push_back( new Faction( id, name, color ) );
+	}
+	cout << "Read " << count << " faction records." << endl;	
+}
+
 void World::restore( const char * db_path_name ) {
 	Sqlite3 db( db_path_name );
+	this->restoreFactions( db );
 	this->restoreSize( db );
 	this->restoreHexes( db );
 	this->restoreUnits( db );
