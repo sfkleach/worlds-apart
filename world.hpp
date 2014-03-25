@@ -45,16 +45,11 @@ public:
 	void clear();
 
 private:
-	void populateHexes( const int width, const int height );
 	void depopulateHexRow( std::vector< Hex * > & row );
 	void depopulateHexes();
-	void populateUnits( const int width, const int height, const int n_units );
 	void depopulateUnits();
 	void deleteFactions();
 	void deleteGoals();
-
-public:
-	void populate( const int width, const int height, const int n_units );
 
 public:
 	void forkDump( const char * db );

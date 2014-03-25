@@ -45,43 +45,6 @@ void World::runOneUnit() {
 	this->units.push_back( top_unit );
 }
 
-
-////////////////////////////////////////////////////////////////////////////////
-//	Randomly populate.
-////////////////////////////////////////////////////////////////////////////////
-
-void World::populateHexes( const int width, const int height ) {
-	cout << "Populate hexes" << endl;
-	this->initSize( width, height );
-}
-
-void World::populateUnits( const int width, const int height, const int n_units ) {
-	cout << "Populate units" << endl;
-	std::default_random_engine generator;
-	std::uniform_int_distribution< int > idistribution;
-	auto irandom = std::bind( idistribution, generator );
-	std::uniform_real_distribution< double > rdistribution;
-	auto r = std::bind( rdistribution, generator );
-	for ( int i = 0; i < n_units; i++ ) {
-		for ( int count = 0; true; count++ ) {
-			Hex * hex = this->tryFind( irandom( 0, width ) , irandom( 0, height ) );
-			if ( hex == nullptr or hex->isOccupied() ) {
-				//cout << "Conflict at (" << location.getX() << "," << location.getY() << ")" << endl;
-				continue;	//	 Re-roll.
-			}
-			units.push_back( new Team( hex, irandom( 0, 6 ) ) );
-			break;
-		}
-	}
-	cout << "Populated" << endl;
-}
-
-
-void World::populate( const int width, const int height, const int n_units ) {
-	this->populateHexes( width, height );
-	this->populateUnits( width, height, n_units );
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 //	Teardown existing structures.
 ////////////////////////////////////////////////////////////////////////////////
