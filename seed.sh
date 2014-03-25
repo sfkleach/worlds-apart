@@ -1,8 +1,12 @@
 #!/bin/bash
-if [ -e $1 ]
+# Usage: ./seed.sh JSON.json DATABASE.db IMAGE.png
+JSON=$1
+DB=$2
+IMG=$3
+if [ -e ${DB} ]
 then
-	mv $1 $1-
+	mv ${DB} ${DB}-
 fi
-sqlite3 $1 < seed.sql
-python3 seed.py $1
-python3 image.py $1 $2
+sqlite3 ${DB} < seed.sql
+python3 seed.py ${DB} ${JSON}
+python3 image.py ${DB} ${IMG}

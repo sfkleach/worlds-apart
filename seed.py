@@ -46,13 +46,13 @@ def convert( img_path ):
 #   JSON Processing
 ################################################################################
 
-def getSeedInfo():
-	with open( 'seed.json' ) as f:
+def getSeedInfo( json_name ):
+	with open( json_name ) as f:
 		return json.load( f )
 
 def addFactions( db, factions_info ):
 	for f in factions_info:
-		db.execute( 'insert into faction values(?,?,?)', ( f['id'], f['name'], f['color'] ) )
+		db.execute( 'insert into faction (id, title, color) values(?,?,?)', ( f['id'], f['title'], f['color'] ) )
 
 def addElevation( db, image ):
 	worldq = db.cursor()
@@ -69,24 +69,34 @@ def addBoard( db, size, board_info ):
 	db.execute( 'insert into world values(?,?)', ( w, h ) )
 	for i in range( 0, w ):
 		for j in range( 0, h ):
-			db.execute( 'insert into hex values (?,?,0,0,0,0)', ( i, j ) )
-	addElevation( db, board_info[ 'elevation' ] )
+			db.execute( 'insert into hex ( x, y ) values (?,?)', ( i, j ) )
+	if 'elevation' in board_info:
+		addElevation( db, board_info[ 'elevation' ] )
 
 def addUnits( db, size, count, factions ):
 	for n in range( 0, count ):
 		( w, h ) = size
 		width = random.randrange( 0, w )
 		height = random.randrange( 0, h )
-		db.execute( 'insert into team values(?,?,?)', ( width, height, random.choice( factions ) ) )
+		db.execute( 'insert into team ( x, y, faction ) values (?,?,?)', ( width, height, random.choice( factions ) ) )
 
-def main( db_name ):
-	seed_info = getSeedInfo()
+def addGoal( db, commands ):
+	for row in commands:
+		title = row[ 'title' ]
+		code = row[ 'code' ]
+		x = row[ 'x' ] if 'x' in row else 0
+		y = row[ 'y' ] if 'y' in row else 0
+		db.execute( 'insert into goal ( title, code, x, y ) values (?,?,?,?)', ( title, code, x, y ) )
+
+def main( db_name, json_name ):
+	seed_info = getSeedInfo( json_name )
 	board_info = seed_info[ 'board' ]
 	size = ( board_info[ 'width' ], board_info[ 'height' ] )
 	with sqlite3.connect( db_name ) as db:
 		addFactions( db, seed_info[ 'factions' ] )
+		addGoal( db, seed_info[ 'goals' ] )
 		addBoard( db, size, board_info )
 		addUnits( db, size, seed_info[ 'units' ], [ f['id'] for f in seed_info[ 'factions' ] ] )
 
 if __name__ == "__main__":
-	main( sys.argv[ 1 ] )
+	main( sys.argv[ 1 ], sys.argv[ 2 ] )

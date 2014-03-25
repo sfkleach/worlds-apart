@@ -1,16 +1,22 @@
 {	
-	"board": { "width": 1024, "height": 1024, "elevation" : "elevation.png" },
-	"units": 10000,
+	"board": { "width": 10, "height": 10 }, 
+	"units": 3,
 	"factions": 
 		[
 			{ "id": 0, "title": "Red Team", "color": "red" },
 			{ "id": 1, "title": "Green Team", "color": "green" },
 			{ "id": 2, "title": "Blue Team", "color": "blue" }
 		],
-	"commands":
+	"goals":
 		[
 			{ "title": "Stay", "code": 0 },
 			{ "title": "Jiggle", "code": 1 },
-			{ "title": "Goto", "code": 2, "x": 512, "y": 512 }
+			{ "title": "Goto", "code": 2, "x": 5, "y": 5 }
+		],
+	"commands":
+		[
+			{ "unit": 1, "goal": 1 },
+			{ "unit": 2, "goal": 2 },
+			{ "unit": 3, "goal": 3 }
 		]
 }

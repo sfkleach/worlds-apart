@@ -1,5 +1,6 @@
 #include <iostream>
 #include <map>
+#include <memory>
 #include <unistd.h>
 
 #include "common.hpp"
@@ -7,6 +8,7 @@
 #include "hex.hpp"
 #include "team.hpp"
 #include "faction.hpp"
+#include "goal.hpp"
 
 using namespace std;
 
@@ -50,7 +52,7 @@ void World::runOneUnit() {
 
 void World::populateHexes( const int width, const int height ) {
 	cout << "Populate hexes" << endl;
-	this->init( width, height );
+	this->initSize( width, height );
 }
 
 void World::populateUnits( const int width, const int height, const int n_units ) {
@@ -74,11 +76,6 @@ void World::populateUnits( const int width, const int height, const int n_units 
 	cout << "Populated" << endl;
 }
 
-void World::depopulateUnits() {
-	for ( auto it = this->units.begin(); it != this->units.end(); ++it ) {
-		delete( *it );
-	}
-}
 
 void World::populate( const int width, const int height, const int n_units ) {
 	this->populateHexes( width, height );
@@ -89,6 +86,11 @@ void World::populate( const int width, const int height, const int n_units ) {
 //	Teardown existing structures.
 ////////////////////////////////////////////////////////////////////////////////
 
+void World::depopulateUnits() {
+	for ( auto it = this->units.begin(); it != this->units.end(); ++it ) {
+		delete( *it );
+	}
+}
 
 void World::depopulateHexRow( vector< Hex * > & row ) {
 	for ( auto it = row.begin(); it != row.end(); ++it ) {
@@ -103,11 +105,20 @@ void World::depopulateHexes() {
 	this->hexes.clear();
 }
 
+void World::deleteFactions() {
+	for ( auto it = this->factions.begin(); it != this->factions.end(); ++it ) {
+		delete it->second;
+	}
+	this->factions.clear();
+}
+
+
 void World::clear() {
 	this->width = 0;
 	this->height = 0;
 	this->depopulateHexes();
 	this->depopulateUnits();
+	this->deleteFactions();
 }
 
 
@@ -119,10 +130,8 @@ void World::dump( const char * db_path_name ) {
 	Sqlite3 db( db_path_name );
 	StatementCache cache( db );
 	db.exec( "BEGIN TRANSACTION" );
-	{
-		for ( auto it = this->factions.begin(); it != this->factions.end(); ++it ) {
-			(*it)->dump( cache );
-		}
+	for ( auto it : this->factions ) {
+		it.second->dump( cache );
 	}
 	{
 		Statement s( db, "INSERT INTO WORLD VALUES(?,?)" );
@@ -130,13 +139,13 @@ void World::dump( const char * db_path_name ) {
 		s.bind( 2, this->height );
 		s.step();
 	}
-	for ( auto it = this->hexes.begin(); it != this->hexes.end(); ++it ) {
-		for ( auto jt = it->begin(); jt != it->end(); ++jt ) {
-			(*jt)->dump( cache );
+	for ( auto it : this->hexes ) {
+		for ( auto jt : it ) {
+			jt->dump( cache );
 		}
 	}
-	for ( auto it = this->units.begin(); it != this->units.end(); ++it ) {
-		(*it)->dump( cache );
+	for ( auto it : this->units ) {
+		it->dump( cache );
 	}
 	db.exec( "END TRANSACTION" );
 }
@@ -156,8 +165,7 @@ void World::forkDump( const char * db ) {
 //	Restore from a database.
 ////////////////////////////////////////////////////////////////////////////////
 
-void World::init( const int width, const int height ) {
-	this->clear();
+void World::initSize( const int width, const int height ) {
 	this->width = width;
 	this->height = height;
 	for ( int i = 0; i < width; i++ ) {
@@ -177,7 +185,7 @@ void World::restoreSize( Sqlite3 & db ) {
 	int w, h;
 	dim.column( 0, w );
 	dim.column( 1, h );	
-	this->init( w, h );
+	this->initSize( w, h );
 	cout << "Init "<< w << "," << h << endl;
 }
 
@@ -218,24 +226,43 @@ void World::restoreUnits( Sqlite3 & db ) {
 }
 
 void World::restoreFactions( Sqlite3 & db ) {
-	Statement factiondata( db, "SELECT id, name, color FROM FACTION" );
+	Statement factiondata( db, "SELECT id, title, color FROM FACTION" );
 	int count;
 	for ( count = 0; ; count++ ) {
 		const int rc = factiondata.step();
 		if ( rc == SQLITE_DONE ) break;
 		int id;
-		string name, color;
+		string title, color;
 		factiondata.column( 0, id );
-		factiondata.column( 1, name );
+		factiondata.column( 1, title );
 		factiondata.column( 2, color );
-		this->factions.push_back( new Faction( id, name, color ) );
+		this->factions[ id ] = new Faction( id, title, color );
 	}
 	cout << "Read " << count << " faction records." << endl;	
+}
+
+void World::restoreGoals( Sqlite3 & db, GoalMap & goals ) {
+	Statement goal_data( db, "SELECT id, title, code, x, y FROM GOAL" );
+	int count;
+	for ( count = 0; ; count++ ) {
+		const int rc = goal_data.step();
+		if ( rc == SQLITE_DONE ) break;
+		int id, code, x, y;
+		string title, color;
+		goal_data.column( 0, id );
+		goal_data.column( 1, title );
+		goal_data.column( 2, code );
+		goal_data.column( 3, y );
+		goal_data.column( 4, y );
+		goals[ id ] = make_shared< Goal >( id, title, code, x, y );
+	}	
 }
 
 void World::restore( const char * db_path_name ) {
 	Sqlite3 db( db_path_name );
 	this->restoreFactions( db );
+	GoalMap goals;
+	this->restoreGoals( db, goals );
 	this->restoreSize( db );
 	this->restoreHexes( db );
 	this->restoreUnits( db );

@@ -3,13 +3,16 @@
 
 #include <random>
 #include <vector>
+#include <map>
 #include <deque>
+#include <memory>
 
 #include "sqlite3lib.hpp"
 
 class Faction;
 class Hex;
 class Unit;
+class Goal;
 
 class World {
 private:
@@ -21,7 +24,8 @@ private:
 	int height;
 	std::vector< std::vector< Hex * > > hexes;
 	std::deque< Unit * > units;
-	std::vector< Faction * > factions;
+public:
+	std::map< int, Faction * > factions;
 
 public:
 	World() :
@@ -37,7 +41,7 @@ public:
 	Hex * tryFind( const int x, const int y );
 	int roll( int n );
 	double roll();
-	void init( const int width, const int height );
+	void initSize( const int width, const int height );
 	void clear();
 
 private:
@@ -46,6 +50,8 @@ private:
 	void depopulateHexes();
 	void populateUnits( const int width, const int height, const int n_units );
 	void depopulateUnits();
+	void deleteFactions();
+	void deleteGoals();
 
 public:
 	void populate( const int width, const int height, const int n_units );
@@ -57,10 +63,13 @@ public:
 public:
 	void restore( const char * db_path_name );
 private:
+	typedef std::map< int, std::shared_ptr< Goal > > GoalMap;
+
 	void restoreFactions( Sqlite3 & db );
 	void restoreSize( Sqlite3 & db );
 	void restoreHexes( Sqlite3 & db );
 	void restoreUnits( Sqlite3 & db );
+	void restoreGoals( Sqlite3 & db, GoalMap & goals );
 
 public:
 	void runOneUnit();

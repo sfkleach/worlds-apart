@@ -1,12 +1,12 @@
 
-CXXFLAGS=-std=c++11
+CXXFLAGS=-std=c++11 -g
 
-OBJS=sqlite_test.o world.o team.o unit.o hex.o faction.o
+OBJS=main.o world.o team.o unit.o hex.o faction.o goal.o mishap.o
 
-sqlite_test: $(OBJS)
-	$(CXX) $(CFLAGS) -g -o $@ $(OBJS) -lsqlite3
+simulation: $(OBJS)
+	$(CXX) $(CFLAGS) -o $@ $(OBJS) -lsqlite3
 
 .PHONY: clean
 clean:
-	rm -f sqlite_test
+	rm -f simulation
 	rm -f *.o

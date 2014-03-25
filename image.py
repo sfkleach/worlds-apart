@@ -39,13 +39,13 @@ def colorTuple( color ):
 	elif color == "blue":
 		return ( 0, 0, 255 )
 	else:
-		return ( 255, 255, 0 )
+		return ( 0, 255, 255 )
 
 def unitsImage( db_name ):
 	with sqlite3.connect( db_name ) as db:
 		img = Image.new( "RGB", worldSize( db ) )
 		for ( coord, m, t ) in trail( db ):
-			img.putpixel( coord, ( 255, 0, 0 ) if m else ( 40 * t, 40 * t, 40 * t ) )
+			img.putpixel( coord, ( 255, 255, 0 ) if m else ( 40 * t, 40 * t, 40 * t ) )
 		for ( coord, color ) in units( db ):
 			img.putpixel( coord, colorTuple( color ) )
 		return img
