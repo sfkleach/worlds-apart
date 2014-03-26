@@ -17,7 +17,7 @@ def trail( db ):
 
 def units( db ):
 	with closing( db.cursor() ) as worldq:
-		worldq.execute( 'select team.x, team.y, faction.color from team join faction on team.faction = faction.id' )
+		worldq.execute( 'select team.x, team.y, faction.color from team join faction on team.faction_id = faction.id' )
 		for row in worldq:
 			x = row[0]
 			y = row[1]

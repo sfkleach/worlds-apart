@@ -63,7 +63,7 @@ private:
 	void restoreFactions( Sqlite3 & db );
 	void restoreSize( Sqlite3 & db );
 	void restoreHexes( Sqlite3 & db );
-	void restoreUnits( Sqlite3 & db );
+	void restoreUnits( Sqlite3 & db, GoalMap & goals );
 	void restoreGoals( Sqlite3 & db, GoalMap & goals );
 
 public:

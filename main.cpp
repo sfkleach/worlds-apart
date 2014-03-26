@@ -113,7 +113,7 @@ int main( int argc, char **argv ) {
     Maybe< string > db_name = args.get( "db" );
 
 	World world;
-	cout << "Populating" << endl;
+	cout << "Restoring" << endl;
 	world.restore( db_name.hasValue() ? db_name.value().c_str() : "world.db" );
 
 	//world.populate( SIZE_X, SIZE_Y, N_UNITS );

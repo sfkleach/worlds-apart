@@ -1,5 +1,6 @@
 #include <iostream>
 #include <map>
+#include <set>
 #include <memory>
 #include <unistd.h>
 
@@ -89,9 +90,12 @@ void World::clear() {
 //	Dump to a database.
 ////////////////////////////////////////////////////////////////////////////////
 
+
+
 void World::dump( const char * db_path_name ) {
 	Sqlite3 db( db_path_name );
 	StatementCache cache( db );
+	IdAllocator & ids = cache.idAllocator();
 	db.exec( "BEGIN TRANSACTION" );
 	for ( auto it : this->factions ) {
 		it.second->dump( cache );
@@ -105,6 +109,13 @@ void World::dump( const char * db_path_name ) {
 	for ( auto it : this->hexes ) {
 		for ( auto jt : it ) {
 			jt->dump( cache );
+		}
+	}
+	for ( auto it: this->units ) {
+		std::shared_ptr< Goal > goal = it->getGoal();
+		if ( not ids.hasObjectID( goal.get() ) ) {
+			ids.objectID( goal.get() );
+			goal->dump( cache );
 		}
 	}
 	for ( auto it : this->units ) {
@@ -167,21 +178,27 @@ void World::restoreHexes( Sqlite3 & db ) {
 	cout << "Read " << count << " hex records." << endl;	
 }
 
-void World::restoreUnits( Sqlite3 & db ) {
-	Statement teamdata( db, "SELECT x, y, faction FROM TEAM" );
+void World::restoreUnits( Sqlite3 & db, GoalMap & goal_map ) {
+	Statement teamdata( db, "SELECT x, y, faction_id, goal_id FROM TEAM" );
 	int count;
 	for ( count = 0; ; count++ ) {
 		const int rc = teamdata.step();
 		if ( rc == SQLITE_DONE ) break;
-		int x, y, faction;
+		int x, y, faction, goal_id;
 		teamdata.column( 0, x );
 		teamdata.column( 1, y );
 		teamdata.column( 2, faction );
+		teamdata.column( 3, goal_id );
+		auto goal_it = goal_map.find( goal_id );
 		Hex * hex = this->tryFind( x, y );
 		if ( hex == nullptr ) {
 			cerr << "Cannot place team at: (" << x << "," << y << ")" << endl;
 		} else {
-			this->units.push_back( new Team( hex, faction ) );
+			Team * team = new Team( hex, faction );
+			this->units.push_back( team );
+			if ( goal_it != goal_map.end() ) {
+				team->setGoal( goal_it->second );
+			}
 			count += 1;
 		}
 	}
@@ -217,7 +234,7 @@ void World::restoreGoals( Sqlite3 & db, GoalMap & goals ) {
 		goal_data.column( 2, code );
 		goal_data.column( 3, y );
 		goal_data.column( 4, y );
-		goals[ id ] = make_shared< Goal >( id, title, code, x, y );
+		goals[ id ] = make_shared< Goal >( id, title, GoalType( code ), x, y );
 	}	
 }
 
@@ -228,5 +245,5 @@ void World::restore( const char * db_path_name ) {
 	this->restoreGoals( db, goals );
 	this->restoreSize( db );
 	this->restoreHexes( db );
-	this->restoreUnits( db );
+	this->restoreUnits( db, goals );
 }

@@ -37,8 +37,8 @@ void Team::action() {
 	}
 }
 
- void Team::dump( StatementCache & db ) {
-	Statement & insert = db.get( "INSERT INTO TEAM VALUES(?,?,?)" );
+void Team::dump( StatementCache & db ) {
+	Statement & insert = db.get( "INSERT INTO TEAM VALUES(?,?,?,NULL)" );
 	insert.reset();
 	insert.bind( 1, this->location->getX() );
 	insert.bind( 2, this->location->getY() );

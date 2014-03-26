@@ -15,8 +15,8 @@
 		],
 	"commands":
 		[
+			{ "unit": 0, "goal": 0 },
 			{ "unit": 1, "goal": 1 },
-			{ "unit": 2, "goal": 2 },
-			{ "unit": 3, "goal": 3 }
+			{ "unit": 2, "goal": 2 }
 		]
 }

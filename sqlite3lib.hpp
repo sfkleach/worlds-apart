@@ -72,6 +72,15 @@ public:
 		}
 	}
 
+	void bind( const int index, const sqlite3_int64 value ) {
+		const int rc = sqlite3_bind_int64( this->statement, index, value );
+		if ( rc != SQLITE_OK ) {
+			//	@todo
+			std::cerr << "SQL error: binding failed (" << rc << "): " << index << ", " << value << std::endl;
+			exit( EXIT_FAILURE );
+		}
+	}
+
 	void bind( const int index, const double value ) {
 		const int rc = sqlite3_bind_double( this->statement, index, value );
 		if ( rc != SQLITE_OK ) {
@@ -112,14 +121,47 @@ public:
 	}
 };
 
+class IdAllocator {
+public:
+	typedef sqlite3_int64 ID;
+
+private:
+	ID next_id;
+	std::map< void *, ID > id_table;
+
+public:
+	IdAllocator() : next_id( 0 ) {}
+
+public:
+	bool hasObjectID( void * item ) {
+		return this->id_table.find( item ) != this->id_table.end();
+	}
+
+	ID next() { 
+		return this->next_id++;
+	}
+
+	ID objectID( void * item ) {
+		auto id_it = this->id_table.find( item );
+		if ( id_it == this->id_table.end() ) {
+			return this->id_table[ item ] = this->next();
+		} else {
+			return id_it->second;
+		}
+	}
+};
 
 class StatementCache {
 private:
 	Sqlite3 & db;
 	std::map< std::string, std::unique_ptr< Statement > > cache;
+	IdAllocator ids;
 
 public:
 	StatementCache( Sqlite3 & db ) : db( db ) {}
+
+public:
+	IdAllocator & idAllocator() { return this->ids; }
 
 public:
 	Statement & get( const std::string & key ) {

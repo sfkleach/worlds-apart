@@ -38,8 +38,9 @@ public:
 
 public:
 	virtual double refractoryPeriod() = 0;
-
 	virtual void action() = 0;
+	std::shared_ptr< Goal > getGoal();
+	void setGoal( std::shared_ptr< Goal > & g );
 
 public:
 	virtual void dump( StatementCache & db ) = 0;

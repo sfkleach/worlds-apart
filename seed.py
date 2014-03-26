@@ -73,13 +73,15 @@ def addBoard( db, size, board_info ):
 	if 'elevation' in board_info:
 		addElevation( db, board_info[ 'elevation' ] )
 
-def addUnits( db, size, count, factions ):
+def addUnits( db, size, count, factions, goals ):
+	( w, h ) = size
 	for n in range( 0, count ):
-		( w, h ) = size
 		width = random.randrange( 0, w )
 		height = random.randrange( 0, h )
-		db.execute( 'insert into team ( x, y, faction ) values (?,?,?)', ( width, height, random.choice( factions ) ) )
-
+		faction_id = random.choice( factions )
+		goal_id = random.choice( goals )
+		db.execute( 'insert into team ( x, y, faction_id, goal_id ) values (?,?,?,?)', ( width, height, faction_id, goal_id ) )
+		
 def addGoal( db, commands ):
 	for row in commands:
 		title = row[ 'title' ]
@@ -96,7 +98,7 @@ def main( db_name, json_name ):
 		addFactions( db, seed_info[ 'factions' ] )
 		addGoal( db, seed_info[ 'goals' ] )
 		addBoard( db, size, board_info )
-		addUnits( db, size, seed_info[ 'units' ], [ f['id'] for f in seed_info[ 'factions' ] ] )
+		addUnits( db, size, seed_info[ 'units' ], [ f['id'] for f in seed_info[ 'factions' ] ], [ g['code'] for g in seed_info[ 'goals' ] ] )
 
 if __name__ == "__main__":
 	main( sys.argv[ 1 ], sys.argv[ 2 ] )
