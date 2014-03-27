@@ -31,21 +31,26 @@ def worldSize( db ):
 		row = worldq.fetchone()
 		return ( row[0], row[1] )
 
+RED = ( 255, 0, 0 )
+GREEN = ( 0, 255, 0 )
+BLUE = ( 0, 0, 255 )
+YELLOWISH = ( 0, 48, 64 )
+
 def colorTuple( color ):
 	if color == "red":
-		return ( 255, 0, 0 )
+		return RED
 	elif color == "green":
-		return ( 0, 255, 0 )
+		return GREEN
 	elif color == "blue":
-		return ( 0, 0, 255 )
+		return BLUE
 	else:
-		return ( 0, 255, 255 )
+		return YELLOWISH
 
 def unitsImage( db_name ):
 	with sqlite3.connect( db_name ) as db:
 		img = Image.new( "RGB", worldSize( db ) )
 		for ( coord, m, t ) in trail( db ):
-			img.putpixel( coord, ( 255, 255, 0 ) if m else ( 40 * t, 40 * t, 40 * t ) )
+			img.putpixel( coord, YELLOWISH if m else ( 40 * t, 40 * t, 40 * t ) )
 		for ( coord, color ) in units( db ):
 			img.putpixel( coord, colorTuple( color ) )
 		return img
