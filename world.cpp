@@ -198,9 +198,6 @@ void World::restoreUnits( Sqlite3 & db, GoalMap & goal_map ) {
 			this->units.push_back( team );
 			if ( goal_it != goal_map.end() ) {
 				team->setGoal( goal_it->second );
-				cerr << "Found goal: " << goal_id << endl;
-			} else {
-				cerr << "No goal for team-unit: " << x << "," << y << "; goal_id = " << goal_id << endl;
 			}
 			count += 1;
 		}
