@@ -96,11 +96,34 @@ public:
             return Maybe< string >( it->second );
         }
     }
+
+    Maybe< int > getInt( const string & key ) {
+        auto it = this->options.find( key );
+        if ( it == this->options.end() ) {
+            return Maybe< int >();
+        } else {
+            int n = 0;
+            stringstream s( it->second );
+            s >> n;
+            return Maybe< int >( n );
+        }        
+    }
+
+    int getInt( const string & key, const int def ) {
+        auto it = this->options.find( key );
+        if ( it == this->options.end() ) {
+            return def;
+        } else {
+            int n = 0;
+            stringstream s( it->second );
+            s >> n;
+            return n;
+        }        
+    }
 };
 
 
 
-#define NUM_SECS 1
 
 int main( int argc, char **argv ) {
 	CommandArguments args( argc, argv );
@@ -123,14 +146,17 @@ int main( int argc, char **argv ) {
 	cout << "Running" << endl;
 	const clock_t t0 = clock();
 	int count = 0;
-	for (;;) {
+    const int NUM_SECS = args.getInt( "max_seconds", 10 );
+    const int max_turns = args.getInt( "max_turns", 5000000 );
+	for (; count < max_turns;) {
 		const clock_t t_now = clock();
 		if ( ( t_now - t0 ) > NUM_SECS * CLOCKS_PER_SEC ) break;
-		for ( int i = 0; i < 10000; i++ ) {
+		for ( int i = 0; count < max_turns && i < 10000; i++ ) {
 			world.runOneUnit();
 			count += 1;
 		}
 	}
+    cout << "Number of turns: " << count << endl;
 	cout << "Number of loops: " << ( count / static_cast< float >( N_UNITS ) ) << endl;
 	cout << "Rescheduled " << ( count / static_cast< float >( NUM_SECS ) ) << " times per sec." << endl;
 

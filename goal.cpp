@@ -1,5 +1,8 @@
+#include <cassert>
 
 #include "goal.hpp"
+#include "unit.hpp"
+#include "mishap.hpp"
 
 void Goal::dump( StatementCache & db ) {
 	Statement & insert = db.get( "INSERT INTO GOAL (id,title,code,x,y) VALUES(?,?,?,?,?)" );
@@ -10,4 +13,20 @@ void Goal::dump( StatementCache & db ) {
 	insert.bind( 4, this->x );
 	insert.bind( 5, this->y );
 	insert.step();
+}
+
+void Goal::activity( Unit * unit ) {
+	assert( unit != nullptr );
+	switch ( this->code ) {
+		case GoalType::Stay:
+			unit->stay();
+			return;
+		case GoalType::Jiggle:
+			unit->jiggle();
+			return;
+		case GoalType::GoTo:
+			unit->goTo( this->x, this->y );
+			return;
+	}
+	throw Mishap( "Internal error" );
 }

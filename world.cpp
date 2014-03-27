@@ -198,6 +198,9 @@ void World::restoreUnits( Sqlite3 & db, GoalMap & goal_map ) {
 			this->units.push_back( team );
 			if ( goal_it != goal_map.end() ) {
 				team->setGoal( goal_it->second );
+				cerr << "Found goal: " << goal_id << endl;
+			} else {
+				cerr << "No goal for team-unit: " << x << "," << y << "; goal_id = " << goal_id << endl;
 			}
 			count += 1;
 		}
@@ -234,7 +237,7 @@ void World::restoreGoals( Sqlite3 & db, GoalMap & goals ) {
 		goal_data.column( 2, code );
 		goal_data.column( 3, y );
 		goal_data.column( 4, y );
-		goals[ id ] = make_shared< Goal >( id, title, GoalType( code ), x, y );
+		goals[ code ] = make_shared< Goal >( id, title, GoalType( code ), x, y );
 	}	
 }
 

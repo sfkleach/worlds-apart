@@ -14,11 +14,9 @@ public:
 public:
 	double refractoryPeriod() { return 1.0; }
 
-	void action();
-
-
 public:
 	void dump( StatementCache & db );
+
 };
 
 #endif
