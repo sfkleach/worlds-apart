@@ -7,10 +7,18 @@
 			{ "id": 1, "title": "Green Team", "color": "green" },
 			{ "id": 2, "title": "Blue Team", "color": "blue" }
 		],
-	"commands":
+	"goals":
 		[
 			{ "title": "Stay", "code": 0 },
 			{ "title": "Jiggle", "code": 1 },
-			{ "title": "Goto", "code": 2, "x": 512, "y": 512 }
+			{ "title": "Goto", "code": 2, "x": 512, "y": 512 },
+			{ "title": "Goto", "code": 2, "x": 0, "y": 0 },
+			{ "title": "Goto", "code": 2, "x": 1023, "y": 1023 }
+		],
+	"commands":
+		[
+			{ "unit": 0, "goal": 0 },
+			{ "unit": 1, "goal": 1 },
+			{ "unit": 2, "goal": 2 }
 		]
 }
