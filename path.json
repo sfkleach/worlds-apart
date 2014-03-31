@@ -1,0 +1,18 @@
+{	
+	"board": { "width": 1024, "height": 1024, "elevation" : "elevation.png" },
+	"units": 250,
+	"factions": 
+		[
+			{ "id": 0, "title": "Red Team", "color": "red" },
+			{ "id": 1, "title": "Green Team", "color": "green" },
+			{ "id": 2, "title": "Blue Team", "color": "blue" }
+		],
+	"goals":
+		[
+			{ "title": "Stay", "code": 0 },
+			{ "title": "Jiggle", "code": 1 },
+			{ "title": "Goto", "code": 2, "x": 400, "y": 400 },
+			{ "title": "Goto", "code": 2, "x": 425, "y": 850 },
+			{ "title": "Goto", "code": 2, "x": 200, "y": 150 }
+		]
+}
