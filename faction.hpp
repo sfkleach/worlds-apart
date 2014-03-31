@@ -8,7 +8,6 @@
 #include "embedded.hpp"
 
 
-
 class Faction {
 private:
 	int id;

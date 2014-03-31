@@ -3,6 +3,10 @@
 #include <set>
 #include <memory>
 #include <unistd.h>
+#include <deque>
+#include <vector>
+#include <queue>
+#include <utility>
 
 #include "common.hpp"
 #include "world.hpp"
@@ -10,6 +14,9 @@
 #include "team.hpp"
 #include "faction.hpp"
 #include "goal.hpp"
+#include "link.hpp"
+#include "mishap.hpp"
+#include "findroute.hpp"
 
 using namespace std;
 
@@ -18,9 +25,17 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 
 Hex * World::tryFind( const int x, const int y ) {
-	try {
-		return this->hexes.at( x % this->width ).at( y % this->height );
-	} catch ( std::exception & e ) {
+	if ( 0 <= x && x < this->width && 0 <= y && y < this->height ) {
+		return this->hexes.at( x ).at( y );
+	} else {
+		return nullptr;
+	}
+}
+
+Hex * World::tryFind( const Coord & xy ) {
+	if ( 0 <= xy.x && xy.x < this->width && 0 <= xy.y && xy.y < this->height ) {
+		return this->hexes.at( xy.x ).at( xy.y );
+	} else {
 		return nullptr;
 	}
 }
@@ -146,7 +161,7 @@ void World::initSize( const int width, const int height ) {
 		hexes.emplace_back();
 		vector< Hex * > & row = hexes.back();
 		for ( int j = 0; j < height; j++ ) {
-			row.push_back( new Hex( Coord( i, j ), 0 ) );
+			row.push_back( new Hex( Coord( i, j ), 1 ) );
 			row.back()->setWorld( this );
 		}
 	}	
@@ -180,8 +195,8 @@ void World::restoreHexes( Sqlite3 & db ) {
 
 void World::restoreUnits( Sqlite3 & db, GoalMap & goal_map ) {
 	Statement teamdata( db, "SELECT x, y, faction_id, goal_id FROM TEAM" );
-	int count;
-	for ( count = 0; ; count++ ) {
+	int count = 0;
+	for (;;) {
 		const int rc = teamdata.step();
 		if ( rc == SQLITE_DONE ) break;
 		int x, y, faction, goal_id;
@@ -232,9 +247,9 @@ void World::restoreGoals( Sqlite3 & db, GoalMap & goals ) {
 		goal_data.column( 0, id );
 		goal_data.column( 1, title );
 		goal_data.column( 2, code );
-		goal_data.column( 3, y );
+		goal_data.column( 3, x );
 		goal_data.column( 4, y );
-		goals[ code ] = make_shared< Goal >( id, title, GoalType( code ), x, y );
+		goals[ id ] = make_shared< Goal >( id, title, GoalType( code ), x, y );
 	}	
 }
 
@@ -246,4 +261,16 @@ void World::restore( const char * db_path_name ) {
 	this->restoreSize( db );
 	this->restoreHexes( db );
 	this->restoreUnits( db, goals );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//	Route finding
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+void World::findRoute( Hex * start, Hex * finish, deque< Link > & route ) {
+	FindRoute finder;
+	finder.findRoute( start, finish );
+	finder.outwardsRoute( finish, route );
 }

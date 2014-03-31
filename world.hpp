@@ -7,6 +7,8 @@
 #include <deque>
 #include <memory>
 
+#include "common.hpp"
+#include "link.hpp"
 #include "sqlite3lib.hpp"
 
 class Faction;
@@ -39,6 +41,7 @@ public:
 
 public:
 	Hex * tryFind( const int x, const int y );
+	Hex * tryFind( const Coord & xy );
 	int roll( int n );
 	double roll();
 	void initSize( const int width, const int height );
@@ -68,6 +71,7 @@ private:
 
 public:
 	void runOneUnit();
+	void findRoute( Hex * start, Hex * end, std::deque< Link > & route );
 
 };
 

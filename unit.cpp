@@ -21,60 +21,54 @@ void Unit::setGoal( std::shared_ptr< Goal > & g ) {
 	this->goal = g;
 }
 
-static pair< int, int > pick( const int d ) {
+static Move pick( const int d ) {
 	switch ( d ) {
-		case 0: return pair< int, int >( 1, 0 );
-		case 1: return pair< int, int >( 0, 1 );
-		case 2: return pair< int, int >( -1, 0 );
-		case 3: return pair< int, int >( 0, -1 );
+		case 0: return Move( 1, 0 );
+		case 1: return Move( 0, 1 );
+		case 2: return Move( -1, 0 );
+		case 3: return Move( 0, -1 );
+		case 4: return Move( 1, 1 );
+		case 5: return Move( 1, -1 );
+		case 6: return Move( -1, 1 );
+		case 7: return Move( -1, -1 );
 	}
-	return pair< int, int >( 0, 0 );
+	return Move( 0, 0 );
 }
 
-void Unit::stay() {
+void Unit::stay( Goal & goal ) {
 	//	No action needed!
 }
 
-void Unit::tryMove( pair< int, int > dxdy ) {
-	if ( dxdy.first == 0 and dxdy.second == 0 ) return;
-	Hex * hex = (
-		this->world->tryFind( 
-			this->location->getX() + dxdy.first,
-			this->location->getY() + dxdy.second
-		)
-	);
-	if ( hex == nullptr ) {
+auto Unit::tryMove( const Move & move ) -> MoveStatus {
+	if ( this->location->isLocked() ) return MoveStatus::INACCESSIBLE;
+	if ( move.dx == 0 and move.dy == 0 ) return MoveStatus::OK;
+	Hex * hex = this->world->tryFind( this->location->getLocation().shift( move ) );
+	if ( hex == nullptr || hex->isLocked() ) {
 		//	No way through.
+		return MoveStatus::INACCESSIBLE;
 	} else if ( hex->isOccupied() ) {
 		//	Blocked.
+		return MoveStatus::BLOCKED;
 	} else {
-		//cout << "Dirn (" << i << "," << j << ") : " << "OK." << endl;
 		this->move( hex );
 		this->location->mark();
-		return;
+		return MoveStatus::OK;
 	}
 }
 
-void Unit::jiggle() {
-	this->tryMove( pick( world->roll( 4 ) ) );
+void Unit::jiggle( Goal & goal ) {
+	this->tryMove( pick( world->roll( 8 ) ) );
 }
 
-void Unit::goTo( const int x, const int y ) {
-	const int dx = x - this->location->getX();
-	const int dy = y - this->location->getY();
-
-	if ( dx == 0 && dy == 0 ) return;
-
-	const int adx = abs( dx );
-	const int ady = abs( dy );
-	const double ratio = double( adx ) / ( double( adx ) + double( ady ) );
- 
-	const double d = this->world->roll();
-	if ( d <= ratio ) {
-		this->tryMove( pair< int, int >( dx < 0 ? -1 : dx > 0 ? 1 : 0, 0 ) );
-	} else {
-		this->tryMove( pair< int, int >( 0, dy < 0 ? -1 : dy > 0 ? 1 : 0 ) );
+void Unit::goTo( Goal & goal ) {
+	Maybe< Move > m = goal.moveTowardsGoal( this->location );
+	if ( m.hasValue() ) {
+		MoveStatus status = this->tryMove( m.fastValue() );
+		if ( status == MoveStatus::BLOCKED ) {
+			this->jiggle( goal );
+		}
 	}
+
 }
 
 void Unit::action() {

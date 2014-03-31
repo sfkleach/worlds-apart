@@ -1,10 +1,13 @@
 #ifndef HEX_HPP
 #define HEX_HPP
 
+#include <vector>
 
 #include "sqlite3lib.hpp"
 #include "common.hpp"
 #include "embedded.hpp"
+
+#include "link.hpp"
 
 class Hex : public Embedded {
 private:
@@ -30,6 +33,10 @@ public:
 		return this->location.y;
 	}
 
+	Coord getLocation() {
+		return this->location;
+	}
+
 	bool isOccupied() const {
 		return this->occupier != nullptr;
 	}
@@ -37,6 +44,14 @@ public:
 	void setLand( const int elevation ) {
 		this->elevation = elevation;
 	}
+
+	double getSpeed() const;
+
+	bool isLocked() const;
+
+	void findNeighbors( std::vector< Link > & links );
+
+	double getVolume() const { return 5.0; }
 
 public:
 	void mark() {
@@ -53,6 +68,8 @@ public:
 	}
 
 public:
+	Hex * tryFindHex( const Coord & loc ) const;
+	Hex * tryFindHex( const Move & move ) const;
 	void dump( StatementCache & db );
 
 };

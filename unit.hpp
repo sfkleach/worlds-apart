@@ -27,13 +27,9 @@ public:
 	}
 
 public:
-	///	Required for priority queue.
-	//bool operator <( const Unit & other ) const {
-	//	return this->priority < other.priority;
-	//}
+	double getVolumeNeeded() const { return 1.0; }
 
 public:
-	//void placeInWorld( class World * world );
 	void move( Hex * new_location );
 
 public:
@@ -45,13 +41,17 @@ public:
 	virtual void dump( StatementCache & db ) = 0;
 
 private:
-	void tryMove( std::pair< int, int > dxdy );
+	enum class MoveStatus {
+		OK, BLOCKED, INACCESSIBLE
+	};
+
+	MoveStatus tryMove( const Move & dxdy );
 
 public: // behaviour.
 	virtual void action();
-	virtual void stay();
-	virtual void jiggle();
-	virtual void goTo( const int x, const int y );
+	virtual void stay( Goal & goal );
+	virtual void jiggle( Goal & goal );
+	virtual void goTo( Goal & goal );
 };
 
 #endif

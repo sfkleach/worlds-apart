@@ -1,8 +1,11 @@
 #include <cassert>
+#include <iostream>
 
 #include "goal.hpp"
 #include "unit.hpp"
 #include "mishap.hpp"
+
+using namespace std;
 
 void Goal::dump( StatementCache & db ) {
 	Statement & insert = db.get( "INSERT INTO GOAL (id,title,code,x,y) VALUES(?,?,?,?,?)" );
@@ -19,14 +22,32 @@ void Goal::activity( Unit * unit ) {
 	assert( unit != nullptr );
 	switch ( this->code ) {
 		case GoalType::Stay:
-			unit->stay();
+			unit->stay( *this );
 			return;
 		case GoalType::Jiggle:
-			unit->jiggle();
+			unit->jiggle( *this );
 			return;
 		case GoalType::GoTo:
-			unit->goTo( this->x, this->y );
+			unit->goTo( *this );
 			return;
 	}
 	throw Mishap( "Internal error" );
+}
+
+void Goal::instantiateFindRoute( Hex * here ) {
+	if ( this->code != GoalType::GoTo ) return;
+	Hex * goal = here->tryFindHex( Coord( this->x, this->y ) );
+	if ( goal == nullptr ) return;
+	this->find_route.reset( new FindRoute() );
+	cout << "Attempting to generate travel time matrix .... " << endl;
+	this->find_route->findRoute( goal );	
+	cout << ".... done!" << endl;
+}
+
+Maybe< Move > Goal::moveTowardsGoal( Hex * here ) {
+	if ( not this->find_route ) {
+		this->instantiateFindRoute( here );
+		if ( not this->find_route ) return Maybe< Move >();
+	}
+	return this->find_route->moveToPrevious( here );
 }

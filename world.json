@@ -11,9 +11,9 @@
 		[
 			{ "title": "Stay", "code": 0 },
 			{ "title": "Jiggle", "code": 1 },
-			{ "title": "Goto", "code": 2, "x": 512, "y": 512 },
-			{ "title": "Goto", "code": 2, "x": 0, "y": 0 },
-			{ "title": "Goto", "code": 2, "x": 1023, "y": 1023 }
+			{ "title": "Goto", "code": 2, "x": 400, "y": 400 },
+			{ "title": "Goto", "code": 2, "x": 100, "y": 100 },
+			{ "title": "Goto", "code": 2, "x": 600, "y": 750 }
 		],
 	"commands":
 		[

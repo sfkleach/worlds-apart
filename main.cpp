@@ -139,9 +139,51 @@ int main( int argc, char **argv ) {
 	cout << "Restoring" << endl;
 	world.restore( db_name.hasValue() ? db_name.value().c_str() : "world.db" );
 
+    /*Hex * a = world.tryFind( 400, 400 );
+    Hex * b = world.tryFind( 410, 410 );
+    deque< Link > path;
+    FindRoute finder;
+    finder.findRoute( a, b );
+    finder.outwardsRoute( b, path );
+
+    cout << "Path ..." << path.size() << endl;
+    for ( auto it : path ) {
+        cout << "(" << it.source->getX() << "," << it.source->getY() << ")";
+        cout << " : ";
+        cout << it.delta;
+        cout << " : ";
+        cout << "(" << it.destination->getX() << "," << it.destination->getY() << ")";
+        cout << endl;   
+    }
+    cout << endl;
+    cout << "Reverse path" << endl;
+    {
+        Hex * here = b;
+        for ( int i = 0; i < 10; i++ ) {
+            cout << "At: " << here->getLocation() << endl;
+            Maybe< Move > m = finder.moveToPrevious( here );
+            if ( m.hasValue() ){
+                cout << "Move: " << m.fastValue() << endl;
+                Hex * there = here->tryFindHex( here->getLocation().shift( m.fastValue() ) );
+                if ( there != nullptr ) {
+                    cout << "There: " << there->getLocation() << endl;
+                    here = there;
+                } else {
+                    cout << "There does not exist" << endl;
+                }
+            } else {
+                cout << "No route" << endl;
+            }
+        }
+    }
+
+    return 0;*/
+
+
+
 	//world.populate( SIZE_X, SIZE_Y, N_UNITS );
 
-	world.forkDump( "before.db" );
+	world.forkDump( "dump0.db" );
 
 	cout << "Running" << endl;
 	const clock_t t0 = clock();
@@ -156,11 +198,13 @@ int main( int argc, char **argv ) {
 			count += 1;
 		}
 	}
+    const double num_secs = static_cast< float >( clock() - t0 ) / CLOCKS_PER_SEC;
     cout << "Number of turns: " << count << endl;
+    cout << "Time taken     : " << num_secs << " secs" << endl;
 	cout << "Number of loops: " << ( count / static_cast< float >( N_UNITS ) ) << endl;
-	cout << "Rescheduled " << ( count / static_cast< float >( NUM_SECS ) ) << " times per sec." << endl;
+	cout << "Rescheduled " << ( count / num_secs ) << " times per sec." << endl;
 
-	world.forkDump( "after.db");
+	world.forkDump( "dump1.db");
 
 	for (;;) {
 		int stat_loc;
