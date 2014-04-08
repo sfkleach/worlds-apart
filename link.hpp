@@ -21,7 +21,6 @@ struct Link {
 		delta( 0.0 )
 	{}
 
-
 	bool operator <( const Link & rhs ) const;
 };
 

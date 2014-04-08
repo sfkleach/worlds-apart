@@ -36,6 +36,7 @@ public:
 	int getX() { return this->x; }
 	int getY() { return this->y; }
 	Maybe< Move > moveTowardsGoal( Hex * here );
+	double predictedTimeFrom( Hex * here );
 
 public:
 	Goal( int id, std::string title, GoalType code, int x, int y ) :

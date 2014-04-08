@@ -15,6 +15,7 @@ public:
 	void setWorld( Embedded & embedded ) {
 		this->world = embedded.world;
 	}
+	World * getWorld() const { return this->world; }
 };
 
 #endif

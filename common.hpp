@@ -18,7 +18,7 @@ struct Coord {
 	short x;
 	short y;
 
-	Move diff( const Coord & dst ) {
+	Move moveTo( const Coord & dst ) {
 		return Move( dst.x - this->x, dst.y - this->y );
 	}
 

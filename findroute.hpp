@@ -47,6 +47,8 @@ public:
 	void findRoute( Hex * start, Hex * finish = nullptr );
 	void outwardsRoute( Hex * hex, std::deque< Link > & route );
 	Maybe< Move > moveToPrevious( Hex * here );
+	double predictedTimeFrom( Hex * here );
+	bool replan( Unit & unit, const double T, std::deque< Move > & route );
 
 };
 

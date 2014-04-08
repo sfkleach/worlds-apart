@@ -2,6 +2,7 @@
 #define HEX_HPP
 
 #include <vector>
+#include <memory>
 
 #include "sqlite3lib.hpp"
 #include "common.hpp"
@@ -15,6 +16,7 @@ private:
 	int elevation;
 	class Unit * occupier;
 	int mark_value;
+	std::unique_ptr< std::vector< Link > > neighbors;
 
 public:
 	Hex( Coord location, int elevation ) :
@@ -37,6 +39,10 @@ public:
 		return this->location;
 	}
 
+	Move moveTo( Hex * there ) {
+		return there->location.moveTo( this->location );
+	}
+
 	bool isOccupied() const {
 		return this->occupier != nullptr;
 	}
@@ -49,7 +55,7 @@ public:
 
 	bool isLocked() const;
 
-	void findNeighbors( std::vector< Link > & links );
+	std::vector< Link > & findNeighbors();
 
 	double getVolume() const { return 5.0; }
 
